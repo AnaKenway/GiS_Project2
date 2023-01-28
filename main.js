@@ -1,3 +1,4 @@
+//map initialization
 var map = L.map('map').setView([43.316, 21.894501], 13);
 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -5,58 +6,116 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
 
-// var wmsAdministrativeLayer = L.tileLayer.wms('http://localhost:8080/geoserver/nis/wms', {
-//     layers: 'nis_administrative_boundaries',
-//     format: 'image/png',
-//     transparent: true,
-//     version: '1.1.0'
-// });
-// wmsAdministrativeLayer.addTo(map);
-
-var wmsBuildingsLayer = L.tileLayer.wms('http://localhost:8080/geoserver/nis/wms', {
-    layers: 'nis_buildings',
+//common functions
+function getLayer(layerName) {
+    var wmsLayer = L.tileLayer.wms('http://localhost:8080/geoserver/nis/wms', {
+    layers: layerName,
     format: 'image/png',
     transparent: true,
     version: '1.1.0'
-});
-wmsBuildingsLayer.addTo(map);
+    });
+    return wmsLayer;
+}
 
-var wmsCommercialLayer = L.tileLayer.wms('http://localhost:8080/geoserver/nis/wms', {
-    layers: 'nis_commercial',
-    format: 'image/png',
-    transparent: true,
-    version: '1.1.0'
-});
-wmsCommercialLayer.addTo(map);
+function addLayerToMap(layerName, map) {
+    var wmsLayer = getLayer(layerName);
+    wmsLayer.addTo(map);
+    return wmsLayer;
+}
 
-var wmsEducationLayer = L.tileLayer.wms('http://localhost:8080/geoserver/nis/wms', {
-    layers: 'nis_education',
-    format: 'image/png',
-    transparent: true,
-    version: '1.1.0'
-});
-wmsEducationLayer.addTo(map);
+function removeLayerFromMap(layer){
+    layer.remove();
+}
 
-var wmsParksLayer = L.tileLayer.wms('http://localhost:8080/geoserver/nis/wms', {
-    layers: 'nis_parks',
-    format: 'image/png',
-    transparent: true,
-    version: '1.1.0'
-});
-wmsParksLayer.addTo(map);
+//populating the map
+var administrativeLayer =  addLayerToMap('nis_administrative_boundaries', map);
+var buildingsLayer = addLayerToMap('nis_buildings', map);
+var roadLayer = addLayerToMap('nis_road', map);
+var educationLayer = addLayerToMap('nis_education', map);
+var parksLayer = addLayerToMap('nis_parks', map);
+var commercialLayer = addLayerToMap('nis_commercial', map);
+var waterLayer = addLayerToMap('nis_water', map);
 
-var wmsRoadLayer = L.tileLayer.wms('http://localhost:8080/geoserver/nis/wms', {
-    layers: 'nis_road',
-    format: 'image/png',
-    transparent: true,
-    version: '1.1.0'
-});
-wmsRoadLayer.addTo(map);
+var btnAdministrative = document.getElementById("btn-administrative");
+btnAdministrative.onclick = function(){
+    if(btnAdministrative.innerHTML === 'Remove Layer'){
+        removeLayerFromMap(administrativeLayer, map);
+        btnAdministrative.innerHTML = "Show Layer";
+    }
+    else{
+        administrativeLayer = addLayerToMap('nis_administrative_boundaries', map);
+        btnAdministrative.innerHTML = 'Remove Layer';
+    }
+}
 
-var wmsWaterLayer = L.tileLayer.wms('http://localhost:8080/geoserver/nis/wms', {
-    layers: 'nis_water',
-    format: 'image/png',
-    transparent: true,
-    version: '1.1.0'
-});
-wmsWaterLayer.addTo(map);
+var btnBuildings = document.getElementById("btn-buildings");
+btnBuildings.onclick = function(){
+    if(btnBuildings.innerHTML === 'Remove Layer'){
+        removeLayerFromMap(buildingsLayer, map);
+        btnBuildings.innerHTML = "Show Layer";
+    }
+    else{
+        buildingsLayer = addLayerToMap('nis_buildings', map);
+        btnBuildings.innerHTML = 'Remove Layer';
+    }
+}
+
+var btnRoad = document.getElementById("btn-road");
+btnRoad.onclick = function(){
+    if(btnRoad.innerHTML === 'Remove Layer'){
+        removeLayerFromMap(roadLayer, map);
+        btnRoad.innerHTML = "Show Layer";
+    }
+    else{
+        roadLayer = addLayerToMap('nis_road', map);
+        btnRoad.innerHTML = 'Remove Layer';
+    }
+}
+
+var btnEducation = document.getElementById("btn-education");
+btnEducation.onclick = function(){
+    if(btnEducation.innerHTML === 'Remove Layer'){
+        removeLayerFromMap(educationLayer, map);
+        btnEducation.innerHTML = "Show Layer";
+    }
+    else{
+        educationLayer = addLayerToMap('nis_education', map);
+        btnEducation.innerHTML = 'Remove Layer';
+    }
+}
+
+var btnParks = document.getElementById("btn-parks");
+btnParks.onclick = function(){
+    if(btnParks.innerHTML === 'Remove Layer'){
+        removeLayerFromMap(parksLayer, map);
+        btnParks.innerHTML = "Show Layer";
+    }
+    else{
+        parksLayer = addLayerToMap('nis_parks', map);
+        btnParks.innerHTML = 'Remove Layer';
+    }
+}
+
+var btnCommercial = document.getElementById("btn-commercial");
+btnCommercial.onclick = function(){
+    if(btnCommercial.innerHTML === 'Remove Layer'){
+        removeLayerFromMap(commercialLayer, map);
+        btnCommercial.innerHTML = "Show Layer";
+    }
+    else{
+        commercialLayer = addLayerToMap('nis_commercial', map);
+        btnCommercial.innerHTML = 'Remove Layer';
+    }
+}
+
+var btnWater = document.getElementById("btn-water");
+btnWater.onclick = function(){
+    if(btnWater.innerHTML === 'Remove Layer'){
+        removeLayerFromMap(waterLayer, map);
+        btnWater.innerHTML = "Show Layer";
+    }
+    else{
+        waterLayer = addLayerToMap('nis_water', map);
+        btnWater.innerHTML = 'Remove Layer';
+    }
+}
