@@ -1,0 +1,67 @@
+#map 
+{ 
+    height: 60vh; 
+}
+
+html
+{
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+.legend-box
+{
+    width: 100px;
+    height: 50px;
+    margin: 3px 3px 3px 3px;
+    border-style: solid;
+    border-color: black;
+}
+
+.flex-row
+{
+    display: flex;
+    justify-content: space-around;
+}
+
+.flex-column
+{
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+.administrative-boundaries
+{
+    background-color: #FFFFE0;
+}
+
+.buildings
+{
+    background-color: #f2a6cc;
+}
+
+.commercial
+{
+    background-color: #3c90ce;
+}
+
+.education
+{
+    background-color: #fb4eb5;
+}
+
+.parks
+{
+    background-color: #1a3f0a; 
+}
+
+.roads
+{
+    background-color: #7b7b7b; 
+}
+
+.water
+{
+    background-color: #3eabf7; 
+}
