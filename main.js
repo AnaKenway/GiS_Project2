@@ -17,7 +17,7 @@ function getLayer(layerName) {
     return wmsLayer;
 }
 
-function addLayerToMap(layerName, map) {
+function addImageLayerToMap(layerName, map) {
     var wmsLayer = getLayer(layerName);
     wmsLayer.addTo(map);
     return wmsLayer;
@@ -27,23 +27,85 @@ function removeLayerFromMap(layer){
     layer.remove();
 }
 
+function onEachFeature(feature, layer) {
+    if(feature.properties && feature.properties.leisure && feature.properties.name){
+        layer.bindPopup('This is a ' + feature.properties.leisure + ' named ' + feature.properties.name);
+    }
+    else if(feature.properties && feature.properties.leisure) {
+        layer.bindPopup('This is a ' + feature.properties.leisure);
+    }
+    else if(feature.properties && feature.properties.shop && feature.properties.name){
+        layer.bindPopup('This is a ' + feature.properties.shop + ' location named ' + feature.properties.name);
+    }
+    else if(feature.properties && feature.properties.shop) {
+        layer.bindPopup('This is a ' + feature.properties.shop);
+    }
+    else if(feature.properties && feature.properties.tourism && feature.properties.name){
+        layer.bindPopup('This is a location of ' + feature.properties.tourism + ' named ' + feature.properties.name);
+    }
+    else if(feature.properties && feature.properties.tourism) {
+        layer.bindPopup('This is a location of ' + feature.properties.tourism);
+    }
+}
+
+
 //populating the map
-var administrativeLayer =  addLayerToMap('nis_administrative_boundaries', map);
-var buildingsLayer = addLayerToMap('nis_buildings', map);
-var roadLayer = addLayerToMap('nis_road', map);
-var educationLayer = addLayerToMap('nis_education', map);
-var parksLayer = addLayerToMap('nis_parks', map);
-var commercialLayer = addLayerToMap('nis_commercial', map);
-var waterLayer = addLayerToMap('nis_water', map);
+var administrativeLayer =  addImageLayerToMap('nis_administrative_boundaries', map);
+var buildingsLayer = addImageLayerToMap('nis_buildings', map);
+var roadLayer = addImageLayerToMap('nis_road', map);
+var educationLayer = addImageLayerToMap('nis_education', map);
+var parksLayer;
+var parksStyle = {
+    "color": "#1a3f0a",
+    "weight": 5,
+    "opacity": 0.65
+};
+$.ajax({
+    url: "http://localhost:8080/geoserver/nis/wfs",
+    data: {
+      service: "WFS",
+      version: "1.0.0",
+      request: "GetFeature",
+      typeName: "nis:nis_parks",
+      outputFormat: "application/json",
+      srsName: "epsg:4326",
+    },
+    dataType: "json",
+    success: function (response) {
+      parksLayer = L.geoJSON(response, {style: parksStyle, onEachFeature: onEachFeature}).addTo(map);
+    },
+  });
+var commercialLayer;
+var commercialStyle = {
+    "color": "#f7a342",
+    "weight": 5,
+    "opacity": 0.65
+};
+$.ajax({
+    url: "http://localhost:8080/geoserver/nis/wfs",
+    data: {
+      service: "WFS",
+      version: "1.0.0",
+      request: "GetFeature",
+      typeName: "nis:nis_commercial",
+      outputFormat: "application/json",
+      srsName: "epsg:4326",
+    },
+    dataType: "json",
+    success: function (response) {
+      commercialLayer = L.geoJSON(response, {onEachFeature: onEachFeature}).addTo(map);
+    },
+  });
+var waterLayer = addImageLayerToMap('nis_water', map);
 
 var btnAdministrative = document.getElementById("btn-administrative");
 btnAdministrative.onclick = function(){
     if(btnAdministrative.innerHTML === 'Remove Layer'){
-        removeLayerFromMap(administrativeLayer, map);
+        removeLayerFromMap(administrativeLayer);
         btnAdministrative.innerHTML = "Show Layer";
     }
     else{
-        administrativeLayer = addLayerToMap('nis_administrative_boundaries', map);
+        administrativeLayer = addImageLayerToMap('nis_administrative_boundaries', map);
         btnAdministrative.innerHTML = 'Remove Layer';
     }
 }
@@ -51,11 +113,11 @@ btnAdministrative.onclick = function(){
 var btnBuildings = document.getElementById("btn-buildings");
 btnBuildings.onclick = function(){
     if(btnBuildings.innerHTML === 'Remove Layer'){
-        removeLayerFromMap(buildingsLayer, map);
+        removeLayerFromMap(buildingsLayer);
         btnBuildings.innerHTML = "Show Layer";
     }
     else{
-        buildingsLayer = addLayerToMap('nis_buildings', map);
+        buildingsLayer = addImageLayerToMap('nis_buildings', map);
         btnBuildings.innerHTML = 'Remove Layer';
     }
 }
@@ -63,11 +125,11 @@ btnBuildings.onclick = function(){
 var btnRoad = document.getElementById("btn-road");
 btnRoad.onclick = function(){
     if(btnRoad.innerHTML === 'Remove Layer'){
-        removeLayerFromMap(roadLayer, map);
+        removeLayerFromMap(roadLayer);
         btnRoad.innerHTML = "Show Layer";
     }
     else{
-        roadLayer = addLayerToMap('nis_road', map);
+        roadLayer = addImageLayerToMap('nis_road', map);
         btnRoad.innerHTML = 'Remove Layer';
     }
 }
@@ -75,11 +137,11 @@ btnRoad.onclick = function(){
 var btnEducation = document.getElementById("btn-education");
 btnEducation.onclick = function(){
     if(btnEducation.innerHTML === 'Remove Layer'){
-        removeLayerFromMap(educationLayer, map);
+        removeLayerFromMap(educationLayer);
         btnEducation.innerHTML = "Show Layer";
     }
     else{
-        educationLayer = addLayerToMap('nis_education', map);
+        educationLayer = addImageLayerToMap('nis_education', map);
         btnEducation.innerHTML = 'Remove Layer';
     }
 }
@@ -87,11 +149,25 @@ btnEducation.onclick = function(){
 var btnParks = document.getElementById("btn-parks");
 btnParks.onclick = function(){
     if(btnParks.innerHTML === 'Remove Layer'){
-        removeLayerFromMap(parksLayer, map);
+        removeLayerFromMap(parksLayer);
         btnParks.innerHTML = "Show Layer";
     }
     else{
-        parksLayer = addLayerToMap('nis_parks', map);
+        $.ajax({
+            url: "http://localhost:8080/geoserver/nis/wfs",
+            data: {
+              service: "WFS",
+              version: "1.0.0",
+              request: "GetFeature",
+              typeName: "nis:nis_parks",
+              outputFormat: "application/json",
+              srsName: "epsg:4326",
+            },
+            dataType: "json",
+            success: function (response) {
+              parksLayer = L.geoJSON(response, {style: parksStyle, onEachFeature: onEachFeature}).addTo(map);
+            },
+          });
         btnParks.innerHTML = 'Remove Layer';
     }
 }
@@ -99,11 +175,25 @@ btnParks.onclick = function(){
 var btnCommercial = document.getElementById("btn-commercial");
 btnCommercial.onclick = function(){
     if(btnCommercial.innerHTML === 'Remove Layer'){
-        removeLayerFromMap(commercialLayer, map);
+        removeLayerFromMap(commercialLayer);
         btnCommercial.innerHTML = "Show Layer";
     }
     else{
-        commercialLayer = addLayerToMap('nis_commercial', map);
+        $.ajax({
+    url: "http://localhost:8080/geoserver/nis/wfs",
+    data: {
+      service: "WFS",
+      version: "1.0.0",
+      request: "GetFeature",
+      typeName: "nis:nis_commercial",
+      outputFormat: "application/json",
+      srsName: "epsg:4326",
+    },
+    dataType: "json",
+    success: function (response) {
+      commercialLayer = L.geoJSON(response, {onEachFeature: onEachFeature}).addTo(map);
+    },
+  });
         btnCommercial.innerHTML = 'Remove Layer';
     }
 }
@@ -111,11 +201,12 @@ btnCommercial.onclick = function(){
 var btnWater = document.getElementById("btn-water");
 btnWater.onclick = function(){
     if(btnWater.innerHTML === 'Remove Layer'){
-        removeLayerFromMap(waterLayer, map);
+        removeLayerFromMap(waterLayer);
         btnWater.innerHTML = "Show Layer";
     }
     else{
-        waterLayer = addLayerToMap('nis_water', map);
+        waterLayer = addImageLayerToMap('nis_water', map);
         btnWater.innerHTML = 'Remove Layer';
     }
 }
+
