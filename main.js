@@ -12,13 +12,30 @@ function getLayer(layerName) {
     layers: layerName,
     format: 'image/png',
     transparent: true,
-    version: '1.1.0'
+    version: '1.1.0',
+    });
+    return wmsLayer;
+}
+
+function getFilterLayer(layerName, attribute, value) {
+    var wmsLayer = L.tileLayer.wms('http://localhost:8080/geoserver/nis/wms', {
+    layers: layerName,
+    format: 'image/png',
+    transparent: true,
+    version: '1.1.0',
+    CQL_FILTER: attribute + '=' + '\'' + value + '\''
     });
     return wmsLayer;
 }
 
 function addImageLayerToMap(layerName, map) {
     var wmsLayer = getLayer(layerName);
+    wmsLayer.addTo(map);
+    return wmsLayer;
+}
+
+function addFilterImageLayerToMap(layerName, map, attribute, value) {
+    var wmsLayer = getFilterLayer(layerName, attribute, value);
     wmsLayer.addTo(map);
     return wmsLayer;
 }
@@ -46,6 +63,12 @@ function onEachFeature(feature, layer) {
     else if(feature.properties && feature.properties.tourism) {
         layer.bindPopup('This is a location of ' + feature.properties.tourism);
     }
+    else if(feature.properties && feature.properties.amenity && feature.properties.name){
+        layer.bindPopup('This is a location of ' + feature.properties.amenity + ' named ' + feature.properties.name);
+    }
+    else if(feature.properties && feature.properties.amenity) {
+        layer.bindPopup('This is a location of ' + feature.properties.amenity);
+    }
 }
 
 
@@ -72,7 +95,8 @@ $.ajax({
     },
     dataType: "json",
     success: function (response) {
-      parksLayer = L.geoJSON(response, {style: parksStyle, onEachFeature: onEachFeature}).addTo(map);
+      parksLayer = L.geoJSON(response, {style: parksStyle, onEachFeature: onEachFeature
+    }).addTo(map);
     },
   });
 var commercialLayer;
@@ -105,6 +129,7 @@ btnAdministrative.onclick = function(){
         btnAdministrative.innerHTML = "Show Layer";
     }
     else{
+        if(administrativeLayer !== null) removeLayerFromMap(administrativeLayer);
         administrativeLayer = addImageLayerToMap('nis_administrative_boundaries', map);
         btnAdministrative.innerHTML = 'Remove Layer';
     }
@@ -153,6 +178,7 @@ btnParks.onclick = function(){
         btnParks.innerHTML = "Show Layer";
     }
     else{
+        removeLayerFromMap(parksLayer);
         $.ajax({
             url: "http://localhost:8080/geoserver/nis/wfs",
             data: {
@@ -210,3 +236,149 @@ btnWater.onclick = function(){
     }
 }
 
+//filters
+//wfs
+var btnFilterParks = document.getElementById("btn-filter-parks");
+btnFilterParks.onclick = function(){   
+    removeLayerFromMap(parksLayer);
+    const radioButtons = document.querySelectorAll('input[name="radio-parks"]');
+    var propertyName;
+    for (const radioButton of radioButtons) {
+        if (radioButton.checked) {
+            propertyName = radioButton.value;
+            break;
+        }
+    }
+    var value = document.getElementById("input-park").value;
+        $.ajax({
+            url: "http://localhost:8080/geoserver/nis/wfs",
+            data: {
+              service: "WFS",
+              version: "1.0.0",
+              request: "GetFeature",
+              typeName: "nis:nis_parks",
+              outputFormat: "application/json",
+              srsName: "epsg:4326",
+            },
+            dataType: "json",
+            success: function (response) {
+              parksLayer = L.geoJSON(response, {style: parksStyle, onEachFeature: onEachFeature, 
+                filter:function(feature,layer){
+                    if(propertyName==='name')
+                        return feature.properties.name === value;
+                }}).addTo(map);
+            },
+          });
+}
+
+var btnFilterCommercial = document.getElementById("btn-filter-commercial");
+btnFilterCommercial.onclick = function(){   
+    removeLayerFromMap(commercialLayer);
+    const radioButtons = document.querySelectorAll('input[name="radio-commercial"]');
+    var propertyName;
+    for (const radioButton of radioButtons) {
+        if (radioButton.checked) {
+            propertyName = radioButton.value;
+            break;
+        }
+    }
+    var value = document.getElementById("input-commercial").value;
+        $.ajax({
+            url: "http://localhost:8080/geoserver/nis/wfs",
+            data: {
+              service: "WFS",
+              version: "1.0.0",
+              request: "GetFeature",
+              typeName: "nis:nis_commercial",
+              outputFormat: "application/json",
+              srsName: "epsg:4326",
+            },
+            dataType: "json",
+            success: function (response) {
+              commercialLayer = L.geoJSON(response, {onEachFeature: onEachFeature, 
+                filter:function(feature,layer){
+                    if(propertyName==='name')
+                        return feature.properties.name === value;
+                    else if(propertyName==='type')
+                        return feature.properties.amenity === value;
+                }}).addTo(map);
+            },
+          });
+}
+
+
+//wms
+var btnFilterAdministrative = document.getElementById("btn-filter-administrative");
+btnFilterAdministrative.onclick = function(){
+    removeLayerFromMap(administrativeLayer);
+    const radioButtons = document.querySelectorAll('input[name="radio-administrative"]');
+    var propertyName;
+    for (const radioButton of radioButtons) {
+        if (radioButton.checked) {
+            propertyName = radioButton.value;
+            break;
+        }
+    }
+    var value = document.getElementById("input-administrative").value;
+    administrativeLayer = addFilterImageLayerToMap('nis_administrative_boundaries', map, propertyName, value);
+}
+
+var btnFilterBuildings = document.getElementById("btn-filter-buildings");
+btnFilterBuildings.onclick = function(){
+    removeLayerFromMap(buildingsLayer);
+    const radioButtons = document.querySelectorAll('input[name="radio-buildings"]');
+    var propertyName;
+    for (const radioButton of radioButtons) {
+        if (radioButton.checked) {
+            propertyName = radioButton.value;
+            break;
+        }
+    }
+    var value = document.getElementById("input-buildings").value;
+    buildingsLayer = addFilterImageLayerToMap('nis_buildings', map, propertyName, value);
+}
+
+var btnFilterRoads = document.getElementById("btn-filter-roads");
+btnFilterRoads.onclick = function(){
+    removeLayerFromMap(roadLayer);
+    const radioButtons = document.querySelectorAll('input[name="radio-roads"]');
+    var propertyName;
+    for (const radioButton of radioButtons) {
+        if (radioButton.checked) {
+            propertyName = radioButton.value;
+            break;
+        }
+    }
+    var value = document.getElementById("input-roads").value;
+    roadLayer = addFilterImageLayerToMap('nis_road', map, propertyName, value);
+}
+
+var btnFilterEducation = document.getElementById("btn-filter-education");
+btnFilterEducation.onclick = function(){
+    removeLayerFromMap(educationLayer);
+    const radioButtons = document.querySelectorAll('input[name="radio-education"]');
+    var propertyName;
+    for (const radioButton of radioButtons) {
+        if (radioButton.checked) {
+            propertyName = radioButton.value;
+            break;
+        }
+    }
+    var value = document.getElementById("input-education").value;
+    educationLayer = addFilterImageLayerToMap('nis_education', map, propertyName, value);
+}
+
+var btnFilterWater = document.getElementById("btn-filter-water");
+btnFilterWater.onclick = function(){
+    removeLayerFromMap(waterLayer);
+    const radioButtons = document.querySelectorAll('input[name="radio-water"]');
+    var propertyName;
+    for (const radioButton of radioButtons) {
+        if (radioButton.checked) {
+            propertyName = radioButton.value;
+            break;
+        }
+    }
+    var value = document.getElementById("input-water").value;
+    waterLayer = addFilterImageLayerToMap('nis_water', map, propertyName, value);
+}
