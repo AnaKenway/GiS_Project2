@@ -382,3 +382,49 @@ btnFilterWater.onclick = function(){
     var value = document.getElementById("input-water").value;
     waterLayer = addFilterImageLayerToMap('nis_water', map, propertyName, value);
 }
+
+//spatial join layer
+
+var btnEduRoads = document.getElementById("btn-edu-road");
+btnEduRoads.onclick = function(){   
+    var radius = document.getElementById("input-radius").value;
+    var roadName = document.getElementById("input-road").value;
+    
+    const encodedRoad = encodeURIComponent(roadName);
+
+    fetch(`https://localhost:7151/SpatialQuery?radius=${radius}&road=${encodedRoad}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        crossOrigin: null
+      })
+        .then(response => response.json())
+        .then(data => $.ajax({
+            url: "http://localhost:8080/geoserver/nis/wfs",
+            data: {
+              service: "WFS",
+              version: "1.0.0",
+              request: "GetFeature",
+              typeName: "nis:nis_education",
+              outputFormat: "application/json",
+              srsName: "epsg:4326",
+            },
+            dataType: "json",
+            success: function (response) {
+                removeLayerFromMap(educationLayer);
+              educationLayer = L.geoJSON(response, {onEachFeature: onEachFeature, 
+                filter:function(feature,layer){ 
+                    for(var i = 0; i < data.length; i++){  
+                      if(feature.properties.osm_id == data[i]){
+                        return true;                       
+                      } 
+                    }}
+                })           
+            .addTo(map);
+            },
+          }))
+        .catch(error => console.error(error));
+
+        
+}
