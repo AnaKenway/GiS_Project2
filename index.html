@@ -43,7 +43,7 @@
                     <div>
                         <input type="radio" id="radio-buildings" name="radio-buildings" value="name">
                         <label for="Name">Name</label>
-                        <input type="radio" id="radio-buildings" name="radio-buildings" value="building">
+                        <input type="radio" id="radio-buildings" name="radio-buildings" value="amenity">
                         <label for="Type">Type</label>
                     </div>                   
                     <div>is</div>
@@ -129,6 +129,13 @@
             <label>meter radius from street/road named</label>
             <input type="text" id="input-road">
             <button id="btn-edu-road">Search</button>
+        </div>
+        <div id="query-traffic" class="query-traffic">
+            <label>Find streets with most traffic where speed is greater than </label>
+            <input type="number" id="input-speed">
+            <label>m/s and  in time moment (0 to 2206)</label>
+            <input type="number" id="input-timestep">
+            <button id="btn-traffic-road">Search</button>
         </div>
         <script src="main.js"></script>
     </body>

@@ -424,7 +424,48 @@ btnEduRoads.onclick = function(){
             .addTo(map);
             },
           }))
-        .catch(error => console.error(error));
-
-        
+        .catch(error => console.error(error));       
 }
+
+//traffic results
+
+var btnTraffic = document.getElementById("btn-traffic-road");
+btnTraffic.onclick = function(){   
+    var speed = document.getElementById("input-speed").value;
+    var timestep = document.getElementById("input-timestep").value;
+
+    fetch(`https://localhost:7151/TrafficData?speed=${speed}&timestep=${timestep}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        crossOrigin: null
+      })
+        .then(response => response.json())
+        .then(data => $.ajax({
+            url: "http://localhost:8080/geoserver/nis/wfs",
+            data: {
+              service: "WFS",
+              version: "1.0.0",
+              request: "GetFeature",
+              typeName: "nis:nis_road",
+              outputFormat: "application/json",
+              srsName: "epsg:4326",
+            },
+            dataType: "json",
+            success: function (response) {
+                removeLayerFromMap(roadLayer);
+              roadLayer = L.geoJSON(response, {onEachFeature: onEachFeature, 
+                filter:function(feature,layer){ 
+                    for(var i = 0; i < data.length; i++){  
+                      if(feature.properties.name == data[i]){
+                        return true;                       
+                      } 
+                    }}
+                })           
+            .addTo(map);
+            },
+          }))
+        .catch(error => console.error(error));       
+}
+
